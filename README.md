@@ -1,2 +1,3 @@
 # RayCasting-SFML
-RayCasting
+RayCasting with SFML.
+
