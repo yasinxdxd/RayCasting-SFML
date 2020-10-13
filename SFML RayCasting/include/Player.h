@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-#include "Line.h"
-#define LINES_COUNT 1
+#include <Wall.h>
+#define LINES_COUNT 360
 
 
 class Player

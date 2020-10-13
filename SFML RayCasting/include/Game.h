@@ -16,6 +16,7 @@ private:
     Player player;
     Line line1;
     Line line2;
+    Line line3;
 
 private:
     void Logic();

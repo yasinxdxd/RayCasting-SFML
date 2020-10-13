@@ -5,6 +5,7 @@ Game::Game()
     this->window = new sf::RenderWindow (sf::VideoMode(WIDTH, HEIGHT), "RAY CASTING", sf::Style::Close | sf::Style::Titlebar);
     line1.setPos(300,60,500,300);
     line2.setPos(1200,700,700,800);
+    line3.setPos(1500,300,1300,700);
 }
 
 Game::~Game()
@@ -28,6 +29,7 @@ void Game::Draw()
     this->player.show(window);
     this->line1.show(window);
     this->line2.show(window);
+    this->line3.show(window);
     //Draw
     this->window->display();
 }
@@ -79,6 +81,20 @@ void Game::Logic()
             this->player.lines[i].setPos(this->player.pos.x, this->player.pos.y, pL1.x, pL1.y);
 
     }
+    for(int i = 0; i<LINES_COUNT; i++)
+    {
+        auto p1 = player.lines[i].L[0].position;
+        auto p2 = player.lines[i].L[1].position;
+
+        auto L11 = line3.L[0].position;
+        auto L21 = line3.L[1].position;
+
+        pL1 = getIntersectionPoint(p1.x,p1.y,p2.x,p2.y,L11.x,L11.y,L21.x,L21.y,player.lines[i].isIntersects);
+
+        if(this->player.lines[i].isIntersects)
+            this->player.lines[i].setPos(this->player.pos.x, this->player.pos.y, pL1.x, pL1.y);
+
+    }
 }
 
 
@@ -113,8 +129,26 @@ sf::Vector2f Game::getIntersectionPoint(float d1x1, float d1y1, float d1x2, floa
         m2=0;
     */
 
-    X = ((m1 * d1x1) - d1y1 - (m2 * d2x1) + d2y1)/(m1-m2);
-    Y = m1 * (X - d1x1) + d1y1;
+    if(m1 == std::numeric_limits<float>::infinity() || m1 <=-1.6384e+010)
+    {
+        X = sf::Mouse::getPosition().x;
+        Y = m2 * (X - d2x1) + d2y1;
+    }
+    else if(m2 == std::numeric_limits<float>::infinity() || m2 <=-1.6384e+010)
+    {
+        X = sf::Mouse::getPosition().x;
+        Y = m1 * (X - d1x1) + d1y1;
+    }
+    else
+    {
+        X = ((m1 * d1x1) - d1y1 - (m2 * d2x1) + d2y1)/(m1-m2);
+        Y = m1 * (X - d1x1) + d1y1;
+    }
+
+
+
+
+
 
     sf::Vector2f result;
     result.x=X;
@@ -156,7 +190,7 @@ sf::Vector2f Game::getIntersectionPoint(float d1x1, float d1y1, float d1x2, floa
         far2.y = d2y2;
     }
 ///////////////
-    std::cout <<"m1: "<<m1<<"   m2: "<<m2<<"   X: "<<X<<"   Y: "<<Y<<"   isIntersection: "<<isIntersects<<" d2: "<<d2<<" bla: "<<getDistance(far2.x, far2.y, result.x, result.y)<<std::endl;
+    //std::cout <<"m1: "<<m1<<"   m2: "<<m2<<"   X: "<<X<<"   Y: "<<Y<<"   isIntersection: "<<isIntersects<<" d2: "<<d2<<" bla: "<<getDistance(far2.x, far2.y, result.x, result.y)<<std::endl;
     if(getDistance(far1.x, far1.y, result.x, result.y)<d1&&getDistance(far2.x, far2.y, result.x, result.y)<d2)
         isIntersects = true;
     else

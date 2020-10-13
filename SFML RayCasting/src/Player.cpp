@@ -9,7 +9,7 @@ Player::Player()
     this->circle->setPosition(this->pos);
     this->circle->setFillColor(sf::Color(255,255,255,150));
     //this->lengthOfLines = std::numeric_limits<int>::max();  ///It is for INFINTY LENGTH :D
-    this->lengthOfLines = 100;//99999999;
+    this->lengthOfLines = 99999999;
 }
 
 Player::~Player()
@@ -37,8 +37,8 @@ void Player::move(sf::RenderWindow *window)
 
     for(int i = 0; i<LINES_COUNT; i++)
     {
-        auto xoff = cos(90*2*PI/360);
-        auto yoff = sin((90*2*PI/360));
+        auto xoff = cos(i*2*PI/360);
+        auto yoff = sin((i*2*PI/360));
         //if(i==90)
         //    continue;
         //else if(i == 270)
