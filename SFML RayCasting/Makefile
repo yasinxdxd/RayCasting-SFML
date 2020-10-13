@@ -1,34 +1,29 @@
+VPATH = ./src
 LIBS = -lsfml-audio -lsfml-graphics -lsfml-window -lsfml-network -lsfml-system
-CXXFLAG = -I "./include"
-LD_LIBRARY_PATH = "-L../SFML-2.5.1/lib"
-CPPFLAGS ="-I../SFML-2.5.1/include"
-LDFLAGS ="-L../SFML-2.5.1/lib"
+CXXFLAGS = -I "./include" 
+CXXFLAGS += -Wall -static-libstdc++ -static-libgcc
+CXX := g++
 
-all: thegame
 
-Line.o:
-	g++ $(CXXFLAG) -c ./src/Line.cpp -o Line.o $(LDFLAGS) $(CPPFLAGS)
+CPPFLAGS ="-I../../SFML-2.5.1/include"
+LDFLAGS ="-L../../SFML-2.5.1/lib"
 
-Player.o: 
-	g++ $(CXXFLAG) -c ./src/Player.cpp -o Player.o
+program: Line.o Player.o Game.o main.o
+	$(CXX) Line.o Player.o Game.o main.o -o ./bin/program $(LIBS) $(LDFLAGS) $(CPPFLAGS)
+
+Line.o: Line.cpp
+	$(CXX) -c $(CXXFLAGS) $< $(LIBS) $(LDFLAGS) $(CPPFLAGS)
+
+Player.o: Player.cpp
+	$(CXX) -c $(CXXFLAGS) $< $(LIBS) $(LDFLAGS) $(CPPFLAGS)
 
 Game.o: Game.cpp
-	g++ $(CXXFLAG) -c ./src/Game.cpp -o Game.o
+	$(CXX) -c $(CXXFLAGS) $< $(LIBS) $(LDFLAGS) $(CPPFLAGS)
 		
 main.o: main.cpp
-	g++ $(CXXFLAG) -c ./src/main.cpp -o main.o
+	$(CXX) -c $(CXXFLAGS) $< $(LIBS) $(LDFLAGS) $(CPPFLAGS)
 
-
-thegame: Line.o Player.o Game.o main.o
-	g++ -o thegame Line.o Player.o Game.o main.o $(LIBS)
 
 clean:
-	rm -f thegame *.o
-
-install:
-	@echo '** Installing...'
-	cp thegame ./bin
-
-uninstall:
-	@echo '** Uninstalling...'
-	rm -f ./bin/thegame
+	del *.o	
+	del bin\*.exe 
