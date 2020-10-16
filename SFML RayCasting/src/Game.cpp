@@ -2,10 +2,27 @@
 
 Game::Game()
 {
-    this->window = new sf::RenderWindow (sf::VideoMode(WIDTH, HEIGHT), "RAY CASTING", sf::Style::Close | sf::Style::Titlebar);
-    line1.setPos(300,60,500,300);
-    line2.setPos(1200,700,700,800);
-    line3.setPos(1500,300,1300,700);
+    this->window = new sf::RenderWindow (sf::VideoMode(WIDTH, HEIGHT), "RAY CASTING", sf::Style::Close | sf::Style::Titlebar | sf::Style::Fullscreen);
+    this->window->setFramerateLimit(60);
+    //this->window->setMouseCursorVisible(false);
+
+    camera.x=window->getSize().x;
+    camera.y=window->getSize().y;
+    view.setCenter(camera.x/2,camera.y/2);
+    view.setViewport(sf::FloatRect(0.f,0.f,1.f,1.f));
+
+    for(int i = 0; i < WALL_COUNT; i++)
+    {
+        Line l;
+        walls.push_back(l);
+    }
+    walls[0].setPos(300,60,500,300);
+    walls[1].setPos(1200,700,700,800);
+    walls[2].setPos(1500,300,1300,700);
+    walls[3].setPos(1500,300,1900,300);
+    walls[4].setPos(1900,300,1300,700);
+    walls[5].setPos(1000,500,1000,300);
+
 }
 
 Game::~Game()
@@ -17,8 +34,18 @@ void Game::EventUpdate()
 {
     while(this->window->pollEvent(this->event))
     {
-        if(this->event.type == sf::Event::Closed)
-            this->window->close();
+        switch(this->event.type)
+        {
+            case sf::Event::Closed:
+                this->window->close();
+                break;
+            case sf::Event::KeyPressed:
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+                    this->window->close();
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -26,11 +53,12 @@ void Game::Draw()
 {
     this->window->clear();
     //Draw
-    this->player.show(window);
-    this->line1.show(window);
-    this->line2.show(window);
-    this->line3.show(window);
+    this->window->setView(this->view);
+        this->player.show(window);
+        for(int j = 0; j<walls.size(); j++)
+            walls[j].show(window);
     //Draw
+    window->setView(window->getDefaultView());
     this->window->display();
 }
 
@@ -39,7 +67,10 @@ void Game::Update()
     EventUpdate();
 
     //UPDATES:
-    player.move(window);
+    player.update(window);
+    player.move();
+    view.setCenter(camera.x/2,camera.y/2);
+    view.reset(sf::FloatRect(player.pos.x-camera.x/2,player.pos.y-camera.y/2,camera.x,camera.y));
     Logic();
 
     //
@@ -50,50 +81,23 @@ void Game::Update()
 
 void Game::Logic()
 {
-    sf::Vector2f pL1;
-    sf::Vector2f pL2;
-
-    for(int i = 0; i<LINES_COUNT; i++)
+    for(int j = 0; j<walls.size(); j++)
     {
-        auto p1 = player.lines[i].L[0].position;
-        auto p2 = player.lines[i].L[1].position;
+        for(int i = 0; i<LINES_COUNT; i++)
+        {
+            auto p1 = player.lines[i].L[0].position;
+            auto p2 = player.lines[i].L[1].position;
 
-        auto L12 = line2.L[0].position;
-        auto L22 = line2.L[1].position;
+            auto L1 = walls[j].L[0].position;
+            auto L2 = walls[j].L[1].position;
 
-        pL2 = getIntersectionPoint(p1.x,p1.y,p2.x,p2.y,L12.x,L12.y,L22.x,L22.y,player.lines[i].isIntersects);
+            auto p = getIntersectionPoint(p1.x,p1.y,p2.x,p2.y,L1.x,L1.y,L2.x,L2.y,player.lines[i].isIntersects);
 
-        if(this->player.lines[i].isIntersects)
-            this->player.lines[i].setPos(this->player.pos.x, this->player.pos.y, pL2.x, pL2.y);
+            if(this->player.lines[i].isIntersects)
+                this->player.lines[i].setPos(this->player.pos.x, this->player.pos.y, p.x, p.y);
+            //walls[j].setAlpha(0);
 
-    }
-    for(int i = 0; i<LINES_COUNT; i++)
-    {
-        auto p1 = player.lines[i].L[0].position;
-        auto p2 = player.lines[i].L[1].position;
-
-        auto L11 = line1.L[0].position;
-        auto L21 = line1.L[1].position;
-
-        pL1 = getIntersectionPoint(p1.x,p1.y,p2.x,p2.y,L11.x,L11.y,L21.x,L21.y,player.lines[i].isIntersects);
-
-        if(this->player.lines[i].isIntersects)
-            this->player.lines[i].setPos(this->player.pos.x, this->player.pos.y, pL1.x, pL1.y);
-
-    }
-    for(int i = 0; i<LINES_COUNT; i++)
-    {
-        auto p1 = player.lines[i].L[0].position;
-        auto p2 = player.lines[i].L[1].position;
-
-        auto L11 = line3.L[0].position;
-        auto L21 = line3.L[1].position;
-
-        pL1 = getIntersectionPoint(p1.x,p1.y,p2.x,p2.y,L11.x,L11.y,L21.x,L21.y,player.lines[i].isIntersects);
-
-        if(this->player.lines[i].isIntersects)
-            this->player.lines[i].setPos(this->player.pos.x, this->player.pos.y, pL1.x, pL1.y);
-
+        }
     }
 }
 
@@ -131,12 +135,12 @@ sf::Vector2f Game::getIntersectionPoint(float d1x1, float d1y1, float d1x2, floa
 
     if(m1 == std::numeric_limits<float>::infinity() || m1 <=-1.6384e+010)
     {
-        X = sf::Mouse::getPosition().x;
+        X = d1x1;
         Y = m2 * (X - d2x1) + d2y1;
     }
     else if(m2 == std::numeric_limits<float>::infinity() || m2 <=-1.6384e+010)
     {
-        X = sf::Mouse::getPosition().x;
+        X = d2x1;
         Y = m1 * (X - d1x1) + d1y1;
     }
     else
@@ -191,7 +195,7 @@ sf::Vector2f Game::getIntersectionPoint(float d1x1, float d1y1, float d1x2, floa
     }
 ///////////////
     //std::cout <<"m1: "<<m1<<"   m2: "<<m2<<"   X: "<<X<<"   Y: "<<Y<<"   isIntersection: "<<isIntersects<<" d2: "<<d2<<" bla: "<<getDistance(far2.x, far2.y, result.x, result.y)<<std::endl;
-    if(getDistance(far1.x, far1.y, result.x, result.y)<d1&&getDistance(far2.x, far2.y, result.x, result.y)<d2)
+    if(getDistance(far1.x, far1.y, result.x, result.y)<=d1&&getDistance(far2.x, far2.y, result.x, result.y)<=d2)
         isIntersects = true;
     else
         isIntersects = false;

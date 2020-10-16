@@ -1,6 +1,7 @@
 #ifndef LINE_H
 #define LINE_H
 #include <iostream>
+#include <vector>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -17,6 +18,8 @@ public:
     virtual ~Line();
     void show(sf::RenderWindow *window);
     void setPos(float _x1, float _y1, float _x2, float _y2);
+    void setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+    void setAlpha(uint8_t a);
     sf::Vertex getPoint1() {return point1;}
     sf::Vertex getPoint2() {return point2;}
 private:
